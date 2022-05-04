@@ -27,29 +27,28 @@ async function run() {
         },
       ],
       apiKey: process.env.API_KEY,
-      connectionTimeoutSeconds: 2,
     });
 
-    const eventsCollection = await typesense
+    typesense
       .collections(process.env.COLLECTION)
-      .retrieve();
-    if (!eventsCollection) {
-      await typesense.collections().create({
-        name: process.env.COLLECTION,
-        fields: [{ name: ".*", type: "auto" }],
+      .retrieve()
+      .catch(async () => {
+        await typesense.collections().create({
+          name: process.env.COLLECTION,
+          fields: [{ name: ".*", type: "auto" }],
+        });
       });
-    }
 
-    const cursor = collection.find().sort({ created_at: -1 });
-    cursor.forEach((doc) => {
-      const document = transform(doc);
-      typesense
-        .collections(process.env.COLLECTION)
-        .documents()
-        .upsert(document)
-        .then(console.log)
-        .catch(console.error);
-    });
+    // const cursor = collection.find().sort({ created_at: -1 });
+    // cursor.forEach((doc) => {
+    //   const document = transform(doc);
+    //   typesense
+    //     .collections(process.env.COLLECTION)
+    //     .documents()
+    //     .upsert(document)
+    //     .then(console.log)
+    //     .catch(console.error);
+    // });
 
     const changeStream = collection.watch();
     changeStream.on("change", (doc) => {
