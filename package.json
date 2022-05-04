@@ -1,7 +1,10 @@
 {
   "name": "indexer",
   "version": "1.0.0",
-  "description": "",
+  "description": "A program that indexes convoy events",
+  "repository": {
+    "url": "https://github.com/frain-dev/indexer.git"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
