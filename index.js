@@ -21,8 +21,8 @@ async function run() {
     const typesense = new Typesense.Client({
       nodes: [
         {
-          host: "localhost",
-          port: "8108",
+          host: process.env.TYPESENSE_HOST,
+          port: process.env.TYPESENSE_PORT,
           protocol: "http",
         },
       ],
