@@ -30,13 +30,15 @@ async function run() {
       connectionTimeoutSeconds: 2,
     });
 
-    typesense
-      .collections()
-      .create({
+    const eventsCollection = await typesense
+      .collections(process.env.COLLECTION)
+      .retrieve();
+    if (!eventsCollection) {
+      await typesense.collections().create({
         name: process.env.COLLECTION,
         fields: [{ name: ".*", type: "auto" }],
-      })
-      .catch(console.error);
+      });
+    }
 
     const cursor = collection.find().sort({ created_at: -1 });
     cursor.forEach((doc) => {
