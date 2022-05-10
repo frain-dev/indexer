@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: indexer
+  name: indexer
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indexer
+  template:
+    metadata:
+      labels:
+        app: indexer
+    spec:
+      containers:
+        - image: ghcr.io/frain-dev/indexer:v0.1.6
+          name: indexer
+          ports:
+            - containerPort: 4000
+          resources: {}
+          env:
+            - name: TYPESENSE_PORT
+              value: "80"
+            - name: TYPESENSE_HOST
+              value: "typesense"
+            - name: API_KEY
+              value: "your-api-key"
+            - name: COLLECTION
+              value: "events"
+            - name: DB_NAME
+              value: "your-convoy-db-name"
+            - name: DB_DSN
+              value: "your-convoy-db-dsn"
+      imagePullSecrets:
+        - name: ghcr-token
+      restartPolicy: Always
