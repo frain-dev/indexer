@@ -39,16 +39,23 @@ async function run() {
         });
       });
 
-    // const cursor = collection.find().sort({ created_at: -1 });
-    // cursor.forEach((doc) => {
-    //   const document = transform(doc);
-    //   typesense
-    //     .collections(process.env.COLLECTION)
-    //     .documents()
-    //     .upsert(document)
-    //     .then(console.log)
-    //     .catch(console.error);
-    // });
+    const cursor = collection.find();
+    let tempDocs = [];
+    cursor.forEach((doc) => {
+      const document = transform(doc);
+      tempDocs.push(document);
+
+      if (tempDocs.length === 100) {
+        typesense
+          .collections(process.env.COLLECTION)
+          .documents()
+          .import(tempDocs, { action: "upsert" })
+          .catch(console.error)
+          .then(() => {
+            tempDocs = [];
+          });
+      }
+    });
 
     const changeStream = collection.watch();
     changeStream.on("change", (doc) => {
@@ -58,7 +65,6 @@ async function run() {
           .collections(process.env.COLLECTION)
           .documents()
           .upsert(document)
-          .then(console.log)
           .catch(console.error);
       }
     });
@@ -79,7 +85,7 @@ function transform(doc) {
   doc.created_at = new Date(doc.created_at).getTime();
   doc.updated_at = new Date(doc.updated_at).getTime();
 
-  return JSON.stringify(doc);
+  return doc;
 }
 
 run().catch(console.error);
