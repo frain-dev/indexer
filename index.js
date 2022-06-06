@@ -2,6 +2,7 @@ const { MongoClient } = require("mongodb");
 const Typesense = require("typesense");
 const { flatten } = require("flat");
 const { config } = require("dotenv");
+const thread = require("child_process");
 
 async function run() {
   config();
@@ -23,9 +24,10 @@ async function run() {
         {
           host: process.env.TYPESENSE_HOST,
           port: process.env.TYPESENSE_PORT,
-          protocol: "http",
+          protocol: "https",
         },
       ],
+      connectionTimeoutSeconds: 1000,
       apiKey: process.env.API_KEY,
     });
 
@@ -38,24 +40,6 @@ async function run() {
           fields: [{ name: ".*", type: "auto" }],
         });
       });
-
-    const cursor = collection.find();
-    let tempDocs = [];
-    cursor.forEach((doc) => {
-      const document = transform(doc);
-      tempDocs.push(document);
-
-      if (tempDocs.length === 100) {
-        typesense
-          .collections(process.env.COLLECTION)
-          .documents()
-          .import(tempDocs, { action: "upsert" })
-          .catch(console.error)
-          .then(() => {
-            tempDocs = [];
-          });
-      }
-    });
 
     const changeStream = collection.watch();
     changeStream.on("change", (doc) => {
